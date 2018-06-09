@@ -6,7 +6,7 @@ import numpy as np
 
 from train import create_model, IMAGE_SIZE, ALPHA, VALIDATION_DATASET_SIZE, IMAGE_DIR
 DEBUG = False
-WEIGHTS_FILE = "model-0.77.h5"
+WEIGHTS_FILE = "model_alfa025_size128-0.77.h5"
 
 
 def iou(boxA, boxB):
@@ -31,10 +31,12 @@ def main():
 
     ious = []
  
-    
     lbl = pd.read_csv('with_labels.csv')
-    labels=lbl[VALIDATION_DATASET_SIZE:]
-           
+   # lbl2 = pd.read_csv('custom_labeled.csv')
+   # lbl=pd.concat([lbl1, lbl2[1:]], ignore_index=True)
+    labels=lbl[:VALIDATION_DATASET_SIZE]
+   # labels=lbl[1000:]
+
     for image_name, x1, y1, x2, y2 in labels.values:
 
         image_path=os.path.join(IMAGE_DIR, image_name)
@@ -56,16 +58,16 @@ def main():
         box2 = [xmin, ymin, xmax, ymax]
         iou_ = iou(box1, box2)
         ious.append(iou_)
-
         if DEBUG:
-            print("IoU for {} is {}".format(image_name, iou_))
+            if iou_<0.7:
+                print("IoU for {} is {}".format(image_name, iou_))
             
-            cv2.rectangle(image_, (int(xmin/IMAGE_SIZE*width), int(ymin/IMAGE_SIZE*height)), (int(xmax/IMAGE_SIZE*width), int(ymax/IMAGE_SIZE*height)), (0, 0, 255), 1)
-            cv2.rectangle(image_, (int(box1[0]/IMAGE_SIZE*width), int(box1[1]/IMAGE_SIZE*height)), (int(box1[2]/IMAGE_SIZE*width), int(box1[3]/IMAGE_SIZE*height)), (0, 255, 0), 1)
-
-            cv2.imshow("image", image_)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+                cv2.rectangle(image_, (int(xmin/IMAGE_SIZE*width), int(ymin/IMAGE_SIZE*height)), (int(xmax/IMAGE_SIZE*width), int(ymax/IMAGE_SIZE*height)), (0, 0, 255), 1)
+                cv2.rectangle(image_, (int(box1[0]/IMAGE_SIZE*width), int(box1[1]/IMAGE_SIZE*height)), (int(box1[2]/IMAGE_SIZE*width), int(box1[3]/IMAGE_SIZE*height)), (0, 255, 0), 1)
+            
+                cv2.imshow("image", image_)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
 
     np.set_printoptions(suppress=True)
     print("\nAvg IoU: {}".format(np.mean(ious)))

@@ -14,12 +14,12 @@ from keras.utils import Sequence
 
 ALPHA = 0.25
 IMAGE_SIZE = 128
-BATCH_SIZE = 16
-EPOCHS = 500
+BATCH_SIZE = 4
+EPOCHS = 100
 PATIENCE = 100
 
 IMAGE_DIR = 'images'
-VALIDATION_DATASET_SIZE = 900
+VALIDATION_DATASET_SIZE = 100
 
 class DataSequence(Sequence):
 
@@ -34,13 +34,14 @@ class DataSequence(Sequence):
 
     def __init__(self, csv_file, image_size, dataset_type = 'train', batch_size=BATCH_SIZE):
         self.csv_file = csv_file
+        lbl = pd.read_csv(self.csv_file)
+      #  lbl2 = pd.read_csv('custom_labeled.csv')
+       # lbl=pd.concat([lbl1, lbl2[1:]], ignore_index=True)
+        self.datalen=len(lbl)
         if dataset_type=='train':
-            lbl = pd.read_csv(self.csv_file)
-            labels=lbl[:VALIDATION_DATASET_SIZE]
-        else:
-            lbl = pd.read_csv(self.csv_file)
             labels=lbl[VALIDATION_DATASET_SIZE:]
-        print(labels.shape)
+        else:
+            labels=lbl[:VALIDATION_DATASET_SIZE]
         self.y = np.zeros((len(labels), 4))
         self.x = []
         self.image_size = image_size
@@ -72,8 +73,8 @@ class DataSequence(Sequence):
 
 def create_model(size, alpha):
     model_net = MobileNet(input_shape=(size, size, 3), include_top=False, weights = "imagenet", alpha=alpha)
-    for layer in model_net.layers[:1]:
-        layer.trainable = False
+  #  for layer in model_net.layers[:1]:
+   #     layer.trainable = False
     x = _depthwise_conv_block(model_net.layers[-1].output, 1024, alpha, 1, block_id=14)
     x = MaxPooling2D(pool_size=(3, 3))(x)
     x = Conv2D(4, kernel_size=(1, 1), padding="same")(x)
@@ -91,8 +92,8 @@ def train(model, epochs, image_size):
                                  save_weights_only=True, mode="auto", period=1)
     stop = EarlyStopping(monitor="val_acc", patience=PATIENCE, mode="auto")
 
-    model.fit_generator(train_datagen, steps_per_epoch=800//BATCH_SIZE, epochs=epochs, validation_data=validation_datagen,
-                        validation_steps=11, callbacks=[checkpoint, stop])
+    model.fit_generator(train_datagen, steps_per_epoch=train_datagen.datalen//BATCH_SIZE, epochs=epochs, validation_data=validation_datagen,
+                        validation_steps=1, callbacks=[checkpoint, stop])
 
 
 def main():
