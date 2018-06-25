@@ -6,9 +6,9 @@ import numpy as np
 
 from train import create_model, IMAGE_SIZE, ALPHA, VALIDATION_DATASET_SIZE, IMAGE_DIR
 DEBUG = False
-WEIGHTS_FILE = "model_alfa025_size128-0.77.h5"
-
-
+#WEIGHTS_FILE = "model_alfa025_size128-0.77.h5"
+#WEIGHTS_FILE = "model_alfa05_size160-0.81.h5"
+WEIGHTS_FILE = "model_alfa075_size160-0.82.h5"
 def iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
